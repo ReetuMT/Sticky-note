@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function StickyNote() {
     const [notes, setNotes] = useState([]);
     const [newTitle, setNewTitle] = useState('');
     const [newDescription, setNewDescription] = useState('');
-    const [newColor, setNewColor] = useState();
     const [isEditing, setIsEditing] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [selectedColor, setSelectedColor] = useState();
@@ -12,6 +13,10 @@ function StickyNote() {
     useEffect(() => {
         getNotes();
     }, []);
+
+    const showToastMessage = () => {
+        toast.success("Success Notification !");
+    };
 
     function getNotes() {
         fetch("http://localhost:4000/sticky")
@@ -28,13 +33,17 @@ function StickyNote() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newNote)
         })
-            .then(() => {
+            .then((res) => {
+                showToastMessage();
                 getNotes();
                 setNewTitle("");
                 setNewDescription("");
                 setSelectedColor();
+                console.log(res);
             })
-            .catch(err => alert("Unable to add sticky note"));
+            .catch(err =>{
+                alert("Unable to add sticky note")
+            })
     }
 
     const deleteNote = (id) => {
@@ -68,6 +77,7 @@ function StickyNote() {
         setNewDescription(item.description);
         setSelectedColor(item.color);
         setIsEditing(true);
+
     };
 
     const handleAddClick = () => {
@@ -86,10 +96,10 @@ function StickyNote() {
     return (
         <>
             <div className='main_div'>
-                <h2 style={{ color: 'white' }}>Sticky Note</h2>
-                <button onClick={handleAddClick} className='btn btn-primary'>Add Notes</button>
+                <h2 style={{ color: 'white' ,backgroundColor:'transparent'}}>Sticky Note</h2>
+                <button onClick={handleAddClick} className='add'>Add Notes</button>
             </div>
-            <div className='sticky_main' style={{ display: 'flex', justifyContent: 'space-between', margin: 10 }}>
+            <div className='sticky_main' style={{ display: 'flex', justifyContent: 'space-evenly', margin: 100 }}>
                 <table border="2px" cellSpacing="10px" style={{ borderColor: selectedColor }}>
                     <thead>
                         <tr>
@@ -104,67 +114,78 @@ function StickyNote() {
                         {notes.map((item) => (
                             <tr key={item.id} style={{ borderColor: item.color, borderWidth: '2px', borderStyle: 'solid' }}>
                                 <td>{item.id}</td>
-                                <td style={{ backgroundColor: item.color, color: "white" }}>{item.title}</td>
-                                <td style={{ backgroundColor: item.color, color: "white" }}>{item.description}</td>
+                                <td style={{ backgroundColor: item.color, color: "white",border:item.color }}>{item.title}</td>
+                                <td style={{ backgroundColor: item.color, color: "white",border:item.color }}>{item.description}</td>
                                 <td>
-                                <select className="form-select" aria-label="Default select example" onChange={handleColorChange}>
-                                <option selected>Choose Colour</option>
-                                <option defaultValue={selectedColor}>Aero</option>
-                                <option defaultValue={selectedColor}>Azure</option>
-                                <option defaultValue={selectedColor}>Beige</option>
-                                <option defaultValue={selectedColor}>Brown</option>
-                                <option defaultValue={selectedColor}>Black</option>
-                                <option defaultValue={selectedColor}>Blue</option>
-                                
-                            </select>
+                                    <select onChange={handleColorChange}>
+                                        <option selected>Choose Colour</option>
+                                        <option value={selectedColor}>Aero</option>
+                                        <option value={selectedColor}>Azure</option>
+                                        <option value={selectedColor}>Beige</option>
+                                        <option value={selectedColor}>Brown</option>
+                                        <option value={selectedColor}>Black</option>
+                                        <option value={selectedColor}>Blue</option>
+
+                                    </select>
                                 </td>
                                 <td>
-                                    <p className="d-inline-flex gap-1">
-                                        <button type="button" className="btn btn-primary" onClick={() => handleEditClick(item)} style={{ backgroundColor: item.color, color: "white" }}>
-                                            Edit
-                                        </button>
-                                        <button type="button" className="btn btn-danger" onClick={() => deleteNote(item.id)} style={{ backgroundColor: item.color, color: "white" }}>
-                                            Delete
-                                        </button>
-                                    </p>
+
+                                    <button type="button" className="btn btn-primary" onClick={() => handleEditClick(item)} style={{ backgroundColor: item.color, color: "white", marginRight: 5, padding: 8, border: "none", borderRadius: 10 }}>
+                                        Edit
+                                    </button>
+                                    <button type="button" className="btn btn-danger" onClick={() => deleteNote(item.id)} style={{ backgroundColor: item.color, color: "white", marginRight: 5, padding: 8, border: "none", borderRadius: 10 }}>
+                                        Delete
+                                    </button>
+
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
+                <ToastContainer />
+
 
                 {isEditing && (
                     <div className="card" style={{ marginLeft: 10 }}>
-                        <div className="card-body">
-                            <input 
-                                type="color" 
-                                value={selectedColor}  
-                                onChange={handleColorChange} 
-                            />
-                            <input
-                                type="text"
-                                placeholder="Title"
-                                value={newTitle}
-                                onChange={(e) => setNewTitle(e.target.value)}
-                            />
-                            <input
-                                type="text"
-                                placeholder="Description"
-                                value={newDescription}
-                                onChange={(e) => setNewDescription(e.target.value)}
-                            />
-                            <button type="button" className="btn btn-success" onClick={() => {
-                                if (editingItem) {
-                                    editItem();
-                                } else {
-                                    addNote();
-                                }
-                            }}>
-                                Save
-                            </button>
-                        </div>
+
+                        <input
+                            type="color"
+                            value={selectedColor}
+                            onChange={handleColorChange}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Title"
+                            value={newTitle}
+                            onChange={(e) => setNewTitle(e.target.value)}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Description"
+                            value={newDescription}
+                            onChange={(e) => setNewDescription(e.target.value)}
+                        />
+                        <button type="button" className="buttons" onClick={() => {
+                            if (editingItem) {
+                                editItem();
+                            } else {
+                                addNote();
+
+
+                            }
+                        }}>
+                            Save
+
+                        </button>
+                    
+                        <button type="button" className="buttons" onClick={() => setIsEditing(false)}>
+                            Close
+                        </button>
+
                     </div>
+
                 )}
+
             </div>
         </>
     );
